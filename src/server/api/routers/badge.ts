@@ -279,4 +279,25 @@ export const badgeRouter = createTRPCRouter({
 
       return OK(null);
     }),
+  getBadgesOwned: publicProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+
+    if (!user?.sub) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to perform this operation.",
+      });
+    }
+
+    const userBadges = await db.userBadge.findMany({
+      where: {
+        userId: user.sub,
+      },
+      include: {
+        badge: true,
+      },
+    });
+
+    return userBadges.map(({ badge }) => badge);
+  }),
 });

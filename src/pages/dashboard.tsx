@@ -30,12 +30,32 @@ export default function Dashboard() {
   const hasCreatorRole = roles.includes("creator");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-10">
       <div className="sticky top-0 flex items-center justify-between gap-1">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         {hasCreatorRole && <CreateBadgeDialog />}
       </div>
       {hasCreatorRole && <CreatedBadgeList />}
+      <BadgeBoardEditor showHeader={hasCreatorRole} />
+    </div>
+  );
+}
+
+function BadgeBoardEditor({ showHeader = false }: { showHeader?: boolean }) {
+  const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery();
+  const badgesOwned = getBadgesOwnedQuery.data ?? [];
+
+  return (
+    <div className="flex flex-col gap-2">
+      {showHeader && <h2 className="text-xl font-bold">Badge Board</h2>}
+      <div className="flex gap-4">
+        <div className="flex flex-col gap-2">
+          {badgesOwned.map((badge) => (
+            <BadgeCard badge={badge} key={badge.id} />
+          ))}
+        </div>
+        <div className="flex-1"></div>
+      </div>
     </div>
   );
 }
@@ -46,7 +66,7 @@ function CreatedBadgeList() {
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-xl font-bold">Badges Created</h2>
+      <h2 className="text-xl font-bold">Creation</h2>
       <div className="grid grid-cols-3 gap-2">
         {createdBadges.map((badge) => (
           <CreatedBadgeListItem badge={badge} key={badge.id} />
@@ -56,9 +76,10 @@ function CreatedBadgeList() {
   );
 }
 
-type Badge = RouterOutputs["badge"]["getAllCreated"][0];
+type BadgeCreated = RouterOutputs["badge"]["getAllCreated"][0];
+type BadgeOwned = RouterOutputs["badge"]["getBadgesOwned"][0];
 
-function CreatedBadgeListItem({ badge }: { badge: Badge }) {
+function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
   const svgXML = atob(badge.svg);
   const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
 
@@ -83,14 +104,26 @@ function CreatedBadgeListItem({ badge }: { badge: Badge }) {
   );
 }
 
-function CreatedBadgeActions({ badge }: { badge: Badge }) {
+function BadgeCard({ badge }: { badge: BadgeOwned }) {
+  const svgXML = atob(badge.svg);
+  const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
+
+  return (
+    <Card
+      className="svg-preview-container p-2"
+      dangerouslySetInnerHTML={{ __html: svgElement }}
+    />
+  );
+}
+
+function CreatedBadgeActions({ badge }: { badge: BadgeCreated }) {
   const disableClaimMutation = api.badge.disable.useMutation();
   const deleteMutation = api.badge.delete.useMutation();
   const generateClaimTokenMutation = api.badge.generateClaimToken.useMutation({
     onSuccess: (token) => {
       const claimURL = `${window.location.origin}/claim?token=${token}`;
       void navigator.clipboard.writeText(claimURL);
-      alert("Copied to clipboard!");
+      alert("Claim link copied to clipboard!");
     },
   });
 
@@ -109,9 +142,7 @@ function CreatedBadgeActions({ badge }: { badge: Badge }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={null}>
-          <MoreVertical className="h-6 w-6" />
-        </Button>
+        <MoreVertical className="h-8 w-8 cursor-pointer p-1" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="48">
         <DropdownMenuGroup>
