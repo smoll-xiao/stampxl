@@ -31,7 +31,7 @@ export default function Dashboard() {
   const hasCreatorRole = roles.includes("creator");
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex w-full flex-col gap-10">
       <div className="sticky top-0 flex items-center justify-between gap-1">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         {hasCreatorRole && <CreateBadgeDialog />}
@@ -44,18 +44,22 @@ export default function Dashboard() {
 
 function BadgeBoard({ showHeader = false }: { showHeader?: boolean }) {
   const [activeGrid, setActiveGrid] = useState<number>();
-  const [board, setBoard] = useState<string[]>(
-    Array.from({ length: 12 * 3 }).map(() => ""),
+  const [board, setBoard] = useState<Array<UserBadge | undefined>>(
+    Array.from({ length: 12 * 3 }),
   );
 
   const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery();
-  const badgesOwned = getBadgesOwnedQuery.data ?? [];
+  const userBadges = getBadgesOwnedQuery.data ?? [];
 
-  const handleBadgeClick = (badge: BadgeOwned) => {
+  const handleBadgeClick = (userBadge: UserBadge) => {
     if (activeGrid === undefined) return;
-    const newBoard = [...board];
-    newBoard[activeGrid] = badge.svg;
-    setBoard(newBoard);
+    setBoard((prev) =>
+      prev.map((item, idx) => {
+        if (idx === activeGrid) return userBadge;
+        if (item?.id === userBadge.id) return undefined;
+        return item;
+      }),
+    );
   };
 
   return (
@@ -63,41 +67,52 @@ function BadgeBoard({ showHeader = false }: { showHeader?: boolean }) {
       {showHeader && <h2 className="text-xl font-bold">Badge Board</h2>}
       <div className="flex flex-col gap-2">
         <div className="grid grid-cols-12 rounded border-2">
-          {board.map((item, i) => {
-            const svgXML = atob(item);
+          {board.map((userBadge, i) => {
+            const svgXML = userBadge ? atob(userBadge.badge.svg) : "";
             const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
             return (
               <div
                 key={i}
                 className={clsx(
                   "svg-preview-container aspect-square cursor-pointer hover:bg-gray-800",
-                  { "border-2 border-dashed border-gray-400": activeGrid === i },
+                  {
+                    "border-2 border-dashed border-gray-400": activeGrid === i,
+                  },
                 )}
                 onClick={() => setActiveGrid(i)}
-                dangerouslySetInnerHTML={{ __html: svgElement }}
+                dangerouslySetInnerHTML={
+                  userBadge ? { __html: svgElement } : undefined
+                }
               />
             );
           })}
         </div>
-        <BadgeInventory badges={badgesOwned} onBadgeClick={handleBadgeClick} />
+        <BadgeInventory
+          userBadges={userBadges}
+          onBadgeClick={handleBadgeClick}
+        />
       </div>
     </div>
   );
 }
 
 function BadgeInventory({
-  badges,
+  userBadges,
   onBadgeClick,
 }: {
-  badges: BadgeOwned[];
-  onBadgeClick: (badge: BadgeOwned) => void;
+  userBadges: UserBadge[];
+  onBadgeClick: (userBadge: UserBadge) => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
       <h5 className="font-bold">Inventory</h5>
       <div className="flex flex-wrap gap-2">
-        {badges.map((badge) => (
-          <BadgeCard badge={badge} key={badge.id} onClick={onBadgeClick} />
+        {userBadges.map((userBadge) => (
+          <BadgeCard
+            userBadge={userBadge}
+            key={userBadge.id}
+            onClick={onBadgeClick}
+          />
         ))}
       </div>
     </div>
@@ -111,17 +126,24 @@ function CreatedBadgeList() {
   return (
     <div className="flex flex-col gap-2">
       <h2 className="text-xl font-bold">Creation</h2>
-      <div className="grid grid-cols-3 gap-2">
-        {createdBadges.map((badge) => (
-          <CreatedBadgeListItem badge={badge} key={badge.id} />
-        ))}
-      </div>
+      {createdBadges.length === 0 ? (
+        <div className="col-span-3 text-sm">
+          You have not created any badges yet. Click the &quot;Create
+          Badge&quot; button to get started.
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {createdBadges.map((badge) => (
+            <CreatedBadgeListItem badge={badge} key={badge.id} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 type BadgeCreated = RouterOutputs["badge"]["getAllCreated"][0];
-type BadgeOwned = RouterOutputs["badge"]["getBadgesOwned"][0];
+type UserBadge = RouterOutputs["badge"]["getBadgesOwned"][0];
 
 function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
   const svgXML = atob(badge.svg);
@@ -149,20 +171,20 @@ function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
 }
 
 function BadgeCard({
-  badge,
+  userBadge,
   onClick,
 }: {
-  badge: BadgeOwned;
-  onClick: (badge: BadgeOwned) => void;
+  userBadge: UserBadge;
+  onClick: (badge: UserBadge) => void;
 }) {
-  const svgXML = atob(badge.svg);
+  const svgXML = atob(userBadge.badge.svg);
   const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
 
   return (
     <Card
-      className="svg-preview-container h-16 w-16 p-2"
+      className="svg-preview-container h-16 w-16 cursor-pointer p-2"
       dangerouslySetInnerHTML={{ __html: svgElement }}
-      onClick={() => onClick(badge)}
+      onClick={() => onClick(userBadge)}
     />
   );
 }
@@ -241,13 +263,18 @@ const defaultCreateBadgeFormValues: CreateBadgeFormValues = {
 };
 
 function CreateBadgeDialog() {
+  const utils = api.useContext();
+
   const [open, setOpen] = useState(false);
   const [formValues, setFormValues] = useState<CreateBadgeFormValues>(
     defaultCreateBadgeFormValues,
   );
 
   const createBadgeMutation = api.badge.create.useMutation({
-    onSuccess: () => setOpen(false),
+    onSuccess: () => {
+      setOpen(false);
+      void utils.badge.getAllCreated.invalidate();
+    },
     onError: () => alert("Something went wrong, please try again later."),
   });
 

@@ -298,6 +298,6 @@ export const badgeRouter = createTRPCRouter({
       },
     });
 
-    return userBadges.map(({ badge }) => badge);
+    return userBadges;
   }),
 });
