@@ -36,26 +36,40 @@ export default function Dashboard() {
         {hasCreatorRole && <CreateBadgeDialog />}
       </div>
       {hasCreatorRole && <CreatedBadgeList />}
-      <BadgeBoardEditor showHeader={hasCreatorRole} />
+      <BadgeInventory showHeader={hasCreatorRole} />
     </div>
   );
 }
 
-function BadgeBoardEditor({ showHeader = false }: { showHeader?: boolean }) {
+function BadgeInventory({ showHeader = false }: { showHeader?: boolean }) {
   const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery();
   const badgesOwned = getBadgesOwnedQuery.data ?? [];
 
   return (
     <div className="flex flex-col gap-2">
       {showHeader && <h2 className="text-xl font-bold">Badge Board</h2>}
-      <div className="flex gap-4">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
+        <BadgeBoard />
+        <h5 className="font-bold">Inventory</h5>
+        <div className="flex flex-wrap gap-2">
           {badgesOwned.map((badge) => (
             <BadgeCard badge={badge} key={badge.id} />
           ))}
         </div>
-        <div className="flex-1"></div>
       </div>
+    </div>
+  );
+}
+
+function BadgeBoard() {
+  return (
+    <div className="grid grid-cols-12 rounded border">
+      {Array.from({ length: 32 }).map((_, i) => (
+        <div
+          className="aspect-square cursor-pointer hover:bg-gray-800"
+          key={i}
+        />
+      ))}
     </div>
   );
 }
