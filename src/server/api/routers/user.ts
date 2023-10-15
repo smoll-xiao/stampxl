@@ -41,6 +41,7 @@ export const userRouter = createTRPCRouter({
 
       await db.user.create({
         data: {
+          username: `@guest${input.id}`,
           id: input.id,
         },
       });
@@ -49,6 +50,12 @@ export const userRouter = createTRPCRouter({
         data: {
           userId: input.id,
           roleId: role.id,
+        },
+      });
+
+      await db.board.create({
+        data: {
+          userId: input.id,
         },
       });
 
@@ -88,4 +95,69 @@ export const userRouter = createTRPCRouter({
 
     return roles.map((role) => role.name);
   }),
+  me: publicProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+
+    if (!user?.sub) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to perform this operation.",
+      });
+    }
+
+    const dbUser = await db.user.findFirst({
+      where: {
+        id: user.sub,
+      },
+    });
+
+    if (!dbUser) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "User not found.",
+      });
+    }
+
+    return dbUser;
+  }),
+  updateUsername: publicProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { db, user } = ctx;
+
+      if (!user?.sub) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to perform this operation.",
+        });
+      }
+
+      const existingUser = await db.user.findFirst({
+        where: {
+          username: input.username,
+        },
+      });
+
+      if (existingUser) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Username already exists.",
+        });
+      }
+
+      await db.user.update({
+        where: {
+          id: user.sub,
+        },
+        data: {
+          username: input.username,
+        },
+      });
+
+      return OK(null);
+    }),
 });

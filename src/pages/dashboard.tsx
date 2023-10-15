@@ -11,7 +11,7 @@ import {
 import { Label } from "@tatak-badges/components/ui/Label";
 import { Input } from "@tatak-badges/components/ui/Input";
 import { Switch } from "@tatak-badges/components/ui/Switch";
-import { type ChangeEvent, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { api, type RouterOutputs } from "@tatak-badges/utils/api";
 import { Card } from "@tatak-badges/components/ui/Card";
 import Chip from "@tatak-badges/components/ui/Chip";
@@ -24,12 +24,13 @@ import {
 } from "@tatak-badges/components/ui/DropdownMenu";
 import { MoreVertical, Sparkles, User, Trash } from "lucide-react";
 import { clsx } from "clsx";
+import { toPng } from "html-to-image";
+import { saveAs } from "file-saver";
 
 export default function Dashboard() {
   const rolesQuery = api.user.roles.useQuery();
   const roles = rolesQuery.data ?? [];
   const hasCreatorRole = roles.includes("creator");
-
   return (
     <div className="flex w-full flex-col gap-10">
       <div className="sticky top-0 flex items-center justify-between gap-1">
@@ -37,19 +38,34 @@ export default function Dashboard() {
         {hasCreatorRole && <CreateBadgeDialog />}
       </div>
       {hasCreatorRole && <CreatedBadgeList />}
-      <BadgeBoard showHeader={hasCreatorRole} />
+      <BadgeBoard />
     </div>
   );
 }
 
-function BadgeBoard({ showHeader = false }: { showHeader?: boolean }) {
+function BadgeBoard() {
   const [activeGrid, setActiveGrid] = useState<number>();
+  const [triggerDownload, setTriggerDownload] = useState(false);
   const [board, setBoard] = useState<Array<UserBadge | undefined>>(
     Array.from({ length: 12 * 3 }),
   );
 
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  const meQuery = api.user.me.useQuery();
+  const user = meQuery.data;
+
+  const boardQuery = api.badge.getBoard.useQuery();
+  const boardData = boardQuery.data;
+
   const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery();
   const userBadges = getBadgesOwnedQuery.data ?? [];
+
+  const saveBoardMutation = api.badge.saveBoard.useMutation({
+    onSuccess: () => {
+      alert("Board saved!");
+    },
+  });
 
   const handleBadgeClick = (userBadge: UserBadge) => {
     if (activeGrid === undefined) return;
@@ -62,11 +78,65 @@ function BadgeBoard({ showHeader = false }: { showHeader?: boolean }) {
     );
   };
 
+  const handleSave = () => {
+    setTriggerDownload(true);
+  };
+
+  const downloadBoard = async () => {
+    if (!boardRef.current) return;
+    const boardAsPNG = await toPng(boardRef.current);
+    saveAs(boardAsPNG, "badge-board.png");
+  };
+
+  useEffect(() => {
+    const newBoard: Array<UserBadge | undefined> = Array.from({
+      length: 12 * 3,
+    });
+
+    boardData?.boardBadge.forEach(({ position, userBadge }) => {
+      newBoard[position] = userBadge;
+    });
+
+    setBoard(newBoard);
+  }, [boardData]);
+
+  useEffect(() => {
+    if (!triggerDownload) return;
+
+    if (activeGrid) {
+      setActiveGrid(undefined);
+      return;
+    }
+
+    if (!boardData) {
+      alert("Error loading board!");
+      return;
+    } else {
+      void downloadBoard();
+      saveBoardMutation.mutate({
+        id: boardData.id,
+        userBadgeIds: board.map((b) => b?.id),
+      });
+    }
+    setTriggerDownload(false);
+  }, [triggerDownload, activeGrid]);
+
   return (
     <div className="flex flex-col gap-2">
-      {showHeader && <h2 className="text-xl font-bold">Badge Board</h2>}
-      <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-12 rounded border-2">
+      <div className="flex justify-between">
+        <h2 className="text-xl font-bold">
+          {user?.username ?? "Unknown"}&apos;s board
+        </h2>
+        <div className="flex items-center gap-2">
+          {user && <EditUsernameDialog user={user} />}
+          <Button onClick={() => void handleSave()}>Save</Button>
+        </div>
+      </div>
+      <div className="flex flex-col gap-2 ">
+        <div
+          className="relative grid grid-cols-12 border-2 bg-background"
+          ref={boardRef}
+        >
           {board.map((userBadge, i) => {
             const svgXML = userBadge ? atob(userBadge.badge.svg) : "";
             const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
@@ -76,7 +146,8 @@ function BadgeBoard({ showHeader = false }: { showHeader?: boolean }) {
                 className={clsx(
                   "svg-preview-container aspect-square cursor-pointer hover:bg-gray-800",
                   {
-                    "border-2 border-dashed border-gray-400": activeGrid === i,
+                    "border-2 border-dashed border-gray-400":
+                      !triggerDownload && activeGrid === i,
                   },
                 )}
                 onClick={() => setActiveGrid(i)}
@@ -86,6 +157,9 @@ function BadgeBoard({ showHeader = false }: { showHeader?: boolean }) {
               />
             );
           })}
+          <div className="absolute bottom-2 right-2 rounded-lg bg-gray-800 px-2 py-1 opacity-80">
+            {user?.username ?? "Unknown"}
+          </div>
         </div>
         <BadgeInventory
           userBadges={userBadges}
@@ -375,6 +449,60 @@ function CreateBadgeDialog() {
           <div className="rounded bg-gray-800 p-2 text-sm">
             Badges with at least 1 claim becomes permanent and cannot be
             modified nor removed.
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="submit" onClick={handleSubmit}>
+            Done
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type User = RouterOutputs["user"]["me"];
+
+function EditUsernameDialog({ user }: { user: User }) {
+  const utils = api.useContext();
+
+  const [open, setOpen] = useState(false);
+  const [username, setUsername] = useState("");
+
+  const updateUsernameMutation = api.user.updateUsername.useMutation({
+    onSuccess: () => {
+      setOpen(false);
+      void utils.user.me.invalidate();
+    },
+    onError: () => alert("Something went wrong, please try again later."),
+  });
+
+  const handleSubmit = () => updateUsernameMutation.mutate({ username });
+
+  useEffect(() => {
+    setUsername(user.username);
+  }, [user]);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary">Edit username</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit username</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="Username" className="text-right">
+              Username
+            </Label>
+            <Input
+              id="Username"
+              className="col-span-3"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
         </div>
         <DialogFooter>

@@ -289,7 +289,7 @@ export const badgeRouter = createTRPCRouter({
       });
     }
 
-    const userBadges = await db.userBadge.findMany({
+    return await db.userBadge.findMany({
       where: {
         userId: user.sub,
       },
@@ -297,7 +297,101 @@ export const badgeRouter = createTRPCRouter({
         badge: true,
       },
     });
-
-    return userBadges;
   }),
+  getBoard: publicProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+
+    if (!user?.sub) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must be logged in to perform this operation.",
+      });
+    }
+
+    const board = await db.board.findFirst({
+      include: {
+        boardBadge: {
+          include: {
+            userBadge: {
+              include: {
+                badge: true,
+              }
+            }
+          },
+        },
+      },
+      where: {
+        userId: user.sub,
+      },
+    });
+
+    if (!board) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Board not found.",
+      });
+    }
+
+    return board;
+  }),
+  saveBoard: publicProcedure
+    .input(
+      z
+        .object({
+          id: z.number(),
+          userBadgeIds: z.array(z.number().optional()),
+        })
+        .transform((input) => {
+          return {
+            ...input,
+            userBadgeIds: input.userBadgeIds
+              .map((x, i) => ({ position: i, userBadgeId: x }))
+              .filter((x) => x.userBadgeId !== undefined)
+              // TODO: Fix the need for the bang operator here.
+              .map((x) => ({ ...x, userBadgeId: x.userBadgeId! })),
+          };
+        }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { db, user } = ctx;
+
+      if (!user?.sub) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to perform this operation.",
+        });
+      }
+
+      const board = await db.board.findFirst({
+        where: {
+          id: input.id,
+          userId: user.sub,
+        },
+      });
+
+      if (!board) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Board not found.",
+        });
+      }
+
+      await db.boardBadge.deleteMany({
+        where: {
+          boardId: input.id,
+        },
+      });
+
+      for (const { position, userBadgeId } of input.userBadgeIds) {
+        await db.boardBadge.create({
+          data: {
+            boardId: input.id,
+            position,
+            userBadgeId,
+          },
+        });
+      }
+
+      return OK(null);
+    }),
 });
