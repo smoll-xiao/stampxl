@@ -76,7 +76,7 @@
 
   /* There's prolly a better way to do this */
   .svg-preview-container > svg {
-    height: 48px;
-    width: 48px;
+    height: 100%;
+    width: 100%;
   }
 }

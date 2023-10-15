@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@tatak-badges/components/ui/DropdownMenu";
 import { MoreVertical, Sparkles, User, Trash } from "lucide-react";
+import { clsx } from "clsx";
 
 export default function Dashboard() {
   const rolesQuery = api.user.roles.useQuery();
@@ -36,40 +37,69 @@ export default function Dashboard() {
         {hasCreatorRole && <CreateBadgeDialog />}
       </div>
       {hasCreatorRole && <CreatedBadgeList />}
-      <BadgeInventory showHeader={hasCreatorRole} />
+      <BadgeBoard showHeader={hasCreatorRole} />
     </div>
   );
 }
 
-function BadgeInventory({ showHeader = false }: { showHeader?: boolean }) {
+function BadgeBoard({ showHeader = false }: { showHeader?: boolean }) {
+  const [activeGrid, setActiveGrid] = useState<number>();
+  const [board, setBoard] = useState<string[]>(
+    Array.from({ length: 12 * 3 }).map(() => ""),
+  );
+
   const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery();
   const badgesOwned = getBadgesOwnedQuery.data ?? [];
+
+  const handleBadgeClick = (badge: BadgeOwned) => {
+    if (activeGrid === undefined) return;
+    const newBoard = [...board];
+    newBoard[activeGrid] = badge.svg;
+    setBoard(newBoard);
+  };
 
   return (
     <div className="flex flex-col gap-2">
       {showHeader && <h2 className="text-xl font-bold">Badge Board</h2>}
       <div className="flex flex-col gap-2">
-        <BadgeBoard />
-        <h5 className="font-bold">Inventory</h5>
-        <div className="flex flex-wrap gap-2">
-          {badgesOwned.map((badge) => (
-            <BadgeCard badge={badge} key={badge.id} />
-          ))}
+        <div className="grid grid-cols-12 rounded border-2">
+          {board.map((item, i) => {
+            const svgXML = atob(item);
+            const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
+            return (
+              <div
+                key={i}
+                className={clsx(
+                  "svg-preview-container aspect-square cursor-pointer hover:bg-gray-800",
+                  { "border-2 border-dashed border-gray-400": activeGrid === i },
+                )}
+                onClick={() => setActiveGrid(i)}
+                dangerouslySetInnerHTML={{ __html: svgElement }}
+              />
+            );
+          })}
         </div>
+        <BadgeInventory badges={badgesOwned} onBadgeClick={handleBadgeClick} />
       </div>
     </div>
   );
 }
 
-function BadgeBoard() {
+function BadgeInventory({
+  badges,
+  onBadgeClick,
+}: {
+  badges: BadgeOwned[];
+  onBadgeClick: (badge: BadgeOwned) => void;
+}) {
   return (
-    <div className="grid grid-cols-12 rounded border">
-      {Array.from({ length: 32 }).map((_, i) => (
-        <div
-          className="aspect-square cursor-pointer hover:bg-gray-800"
-          key={i}
-        />
-      ))}
+    <div className="flex flex-col gap-2">
+      <h5 className="font-bold">Inventory</h5>
+      <div className="flex flex-wrap gap-2">
+        {badges.map((badge) => (
+          <BadgeCard badge={badge} key={badge.id} onClick={onBadgeClick} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -100,7 +130,7 @@ function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
   return (
     <Card className="flex items-center gap-1 p-2">
       <div
-        className="svg-preview-container"
+        className="svg-preview-container h-16 w-16"
         dangerouslySetInnerHTML={{ __html: svgElement }}
       />
       <div className="flex-1">
@@ -118,14 +148,21 @@ function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
   );
 }
 
-function BadgeCard({ badge }: { badge: BadgeOwned }) {
+function BadgeCard({
+  badge,
+  onClick,
+}: {
+  badge: BadgeOwned;
+  onClick: (badge: BadgeOwned) => void;
+}) {
   const svgXML = atob(badge.svg);
   const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
 
   return (
     <Card
-      className="svg-preview-container p-2"
+      className="svg-preview-container h-16 w-16 p-2"
       dangerouslySetInnerHTML={{ __html: svgElement }}
+      onClick={() => onClick(badge)}
     />
   );
 }
