@@ -4,8 +4,6 @@ import {
   createTRPCRouter,
   publicProcedure,
 } from "@tatak-badges/server/api/trpc";
-import { NextApiRequest } from "next";
-import { decodeJwt, jwtVerify } from "jose";
 import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({
@@ -160,4 +158,20 @@ export const userRouter = createTRPCRouter({
 
       return OK(null);
     }),
+  getAllUsernames: publicProcedure.query(async ({ ctx }) => {
+    const { db, user } = ctx;
+
+    const users = await db.user.findMany({
+      select: {
+        username: true,
+      },
+      where: {
+        id: {
+          not: user?.sub,
+        },
+      },
+    });
+
+    return users.map((user) => user.username);
+  }),
 });

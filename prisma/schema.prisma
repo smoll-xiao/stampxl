@@ -48,7 +48,6 @@ model Badge {
   active      Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  trade       Trade[]
   claimToken  ClaimToken[]
 
   @@index([name])
@@ -63,19 +62,29 @@ model UserBadge {
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
   boardBadge BoardBadge[]
+  tradeItem  TradeItem[]
 }
 
 model Trade {
-  id         Int      @id @default(autoincrement())
-  sender     User     @relation(name: "tradeCreated", fields: [senderId], references: [id])
+  id         Int         @id @default(autoincrement())
+  sender     User        @relation(name: "tradeCreated", fields: [senderId], references: [id])
   senderId   String
-  receiver   User     @relation(name: "tradeOffers", fields: [receiverId], references: [id])
+  receiver   User        @relation(name: "tradeOffers", fields: [receiverId], references: [id])
   receiverId String
-  badge      Badge    @relation(fields: [badgeId], references: [id])
-  badgeId    Int
   accepted   Boolean?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  tradeItem  TradeItem[]
+}
+
+model TradeItem {
+  id          Int       @id @default(autoincrement())
+  trade       Trade     @relation(fields: [tradeId], references: [id])
+  tradeId     Int
+  userBadge   UserBadge @relation(fields: [userBadgeId], references: [id])
+  userBadgeId Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model ClaimToken {

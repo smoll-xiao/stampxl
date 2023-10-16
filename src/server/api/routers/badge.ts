@@ -279,25 +279,45 @@ export const badgeRouter = createTRPCRouter({
 
       return OK(null);
     }),
-  getBadgesOwned: publicProcedure.query(async ({ ctx }) => {
-    const { db, user } = ctx;
+  getBadgesOwned: publicProcedure
+    .input(
+      z
+        .object({
+          userId: z.string().optional(),
+          username: z.string().optional(),
+        })
+        .refine((input) => {
+          return input.userId ?? input.username;
+        }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { db, user } = ctx;
 
-    if (!user?.sub) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to perform this operation.",
+      if (!user?.sub) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to perform this operation.",
+        });
+      }
+
+      return await db.userBadge.findMany({
+        where: {
+          OR: [
+            {
+              userId: input.userId,
+            },
+            {
+              user: {
+                username: input.username,
+              },
+            },
+          ],
+        },
+        include: {
+          badge: true,
+        },
       });
-    }
-
-    return await db.userBadge.findMany({
-      where: {
-        userId: user.sub,
-      },
-      include: {
-        badge: true,
-      },
-    });
-  }),
+    }),
   getBoard: publicProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
 
@@ -315,8 +335,8 @@ export const badgeRouter = createTRPCRouter({
             userBadge: {
               include: {
                 badge: true,
-              }
-            }
+              },
+            },
           },
         },
       },
@@ -382,7 +402,22 @@ export const badgeRouter = createTRPCRouter({
         },
       });
 
-      for (const { position, userBadgeId } of input.userBadgeIds) {
+      const ownedBadges = await db.userBadge.findMany({
+        where: {
+          id: {
+            in: input.userBadgeIds.map((x) => x.userBadgeId),
+          },
+          userId: user.sub,
+        },
+      });
+
+      const validUserBadgeIds = input.userBadgeIds.filter((badge) => {
+        return ownedBadges.some(
+          (ownedBadge) => ownedBadge.id === badge.userBadgeId,
+        );
+      });
+
+      for (const { position, userBadgeId } of validUserBadgeIds) {
         await db.boardBadge.create({
           data: {
             boardId: input.id,

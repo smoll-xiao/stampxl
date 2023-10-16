@@ -1,6 +1,7 @@
 import { badgeRouter } from "@tatak-badges/server/api/routers/badge";
 import { createTRPCRouter } from "@tatak-badges/server/api/trpc";
 import { userRouter } from "@tatak-badges/server/api/routers/user";
+import { tradeRouter } from "@tatak-badges/server/api/routers/trade";
 
 /**
  * This is the primary router for your server.
@@ -10,6 +11,7 @@ import { userRouter } from "@tatak-badges/server/api/routers/user";
 export const appRouter = createTRPCRouter({
   badge: badgeRouter,
   user: userRouter,
+  trade: tradeRouter,
 });
 
 // export type definition of API

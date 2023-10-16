@@ -26,6 +26,19 @@ import { MoreVertical, Sparkles, User, Trash } from "lucide-react";
 import { clsx } from "clsx";
 import { toPng } from "html-to-image";
 import { saveAs } from "file-saver";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tatak-badges/components/ui/Popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@tatak-badges/components/ui/Command";
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 
 export default function Dashboard() {
   const rolesQuery = api.user.roles.useQuery();
@@ -33,13 +46,157 @@ export default function Dashboard() {
   const hasCreatorRole = roles.includes("creator");
   return (
     <div className="flex w-full flex-col gap-10">
-      <div className="sticky top-0 flex items-center justify-between gap-1">
+      <div className="flex items-center justify-between gap-1">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        {hasCreatorRole && <CreateBadgeDialog />}
+        <div className="flex gap-2">
+          <TradeBadgeDialog />
+          {hasCreatorRole && <CreateBadgeDialog />}
+        </div>
       </div>
       {hasCreatorRole && <CreatedBadgeList />}
       <BadgeBoard />
+      <TradeList />
     </div>
+  );
+}
+
+function TradeList() {
+  const allTradesQuery = api.trade.getAll.useQuery();
+  const allTrades = allTradesQuery.data ?? [];
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="text-xl font-bold">Trades</h2>
+      <div className="flex flex-col gap-2">
+        {allTrades.length === 0 && (
+          <div>
+            You have no pending trade requests/offer. Click the &quot;Trade
+            Badge&quot; to create one.
+          </div>
+        )}
+        {allTrades.map((trade) => (
+          <TradeCard key={trade.id} trade={trade} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+type Trade = RouterOutputs["trade"]["getAll"][0];
+
+function TradeCard({ trade }: { trade: Trade }) {
+  const utils = api.useContext();
+
+  const meQuery = api.user.me.useQuery();
+  const user = meQuery.data;
+
+  const acceptTradeMutation = api.trade.accept.useMutation({
+    onSuccess: () => {
+      void utils.trade.getAll.invalidate();
+      alert("Trade accepted!");
+    },
+  });
+
+  const rejectTradeMutation = api.trade.reject.useMutation({
+    onSuccess: () => {
+      void utils.trade.getAll.invalidate();
+      alert("Trade rejected!");
+    },
+  });
+
+  const cancelTradeMutation = api.trade.cancel.useMutation({
+    onSuccess: () => {
+      void utils.trade.getAll.invalidate();
+      alert("Trade cancelled!");
+    },
+  });
+
+  const badges: { sender: UserBadge[]; receiver: UserBadge[] } = {
+    sender: [],
+    receiver: [],
+  };
+
+  trade.tradeItem?.forEach(({ userBadge }) => {
+    badges[userBadge.userId === trade.senderId ? "sender" : "receiver"].push(
+      userBadge,
+    );
+  });
+
+  return (
+    <Card className="flex flex-col gap-2 p-2">
+      <div className="flex flex-col gap-6 p-2">
+        <div className="flex items-start gap-2">
+          <div className="flex flex-1 flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-lg font-bold">From</span>
+              <span className="text-sm">{trade.sender.username}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {badges.sender.length === 0 && "Nothing to trade"}
+              {badges.sender.map((userBadge) => (
+                <BadgeCard
+                  className="bg-gray-800"
+                  userBadge={userBadge}
+                  key={userBadge.id}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-1 flex-col gap-1">
+            <div className="flex flex-1 flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-lg font-bold">To</span>
+                <span className="text-sm">{trade.receiver.username}</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {badges.receiver.length === 0 && "Nothing to trade"}
+                {badges.receiver.map((userBadge) => (
+                  <BadgeCard
+                    className="bg-gray-800"
+                    userBadge={userBadge}
+                    key={userBadge.id}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm text-gray-400">
+            {new Date(trade.createdAt).toLocaleString()}
+          </span>
+          {user && user.id === trade.receiverId && (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void acceptTradeMutation.mutate({ id: trade.id });
+                }}
+              >
+                Accept
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void rejectTradeMutation.mutate({ id: trade.id });
+                }}
+              >
+                Reject
+              </Button>
+            </div>
+          )}
+          {user && user?.id === trade.senderId && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                void cancelTradeMutation.mutate({ id: trade.id });
+              }}
+            >
+              Cancel
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -58,7 +215,10 @@ function BadgeBoard() {
   const boardQuery = api.badge.getBoard.useQuery();
   const boardData = boardQuery.data;
 
-  const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery();
+  const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery(
+    { userId: user?.id ?? "" },
+    { enabled: !!user },
+  );
   const userBadges = getBadgesOwnedQuery.data ?? [];
 
   const saveBoardMutation = api.badge.saveBoard.useMutation({
@@ -119,7 +279,7 @@ function BadgeBoard() {
       });
     }
     setTriggerDownload(false);
-  }, [triggerDownload, activeGrid]);
+  }, [saveBoardMutation, board, boardData, triggerDownload, activeGrid]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -179,7 +339,7 @@ function BadgeInventory({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <h5 className="font-bold">Inventory</h5>
+      <h5 className="text-md font-bold">Inventory</h5>
       <div className="flex flex-wrap gap-2">
         {userBadges.map((userBadge) => (
           <BadgeCard
@@ -245,20 +405,22 @@ function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
 }
 
 function BadgeCard({
+  className = "",
   userBadge,
   onClick,
 }: {
+  className?: string;
   userBadge: UserBadge;
-  onClick: (badge: UserBadge) => void;
+  onClick?: (badge: UserBadge) => void;
 }) {
   const svgXML = atob(userBadge.badge.svg);
   const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
 
   return (
     <Card
-      className="svg-preview-container h-16 w-16 cursor-pointer p-2"
+      className={`${className} svg-preview-container h-16 w-16 cursor-pointer p-2`}
       dangerouslySetInnerHTML={{ __html: svgElement }}
-      onClick={() => onClick(userBadge)}
+      onClick={() => onClick?.(userBadge)}
     />
   );
 }
@@ -512,5 +674,233 @@ function EditUsernameDialog({ user }: { user: User }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function TradeBadgeDialog() {
+  const util = api.useContext();
+
+  const [open, setOpen] = useState(false);
+  const [targetUsername, setTargetUsername] = useState<string>("");
+
+  const [selectedBadges, setSelectedBadges] = useState<
+    Record<number, UserBadge>
+  >({});
+
+  const [selectedTargetBadges, setSelectedTargetBadges] = useState<
+    Record<number, UserBadge>
+  >({});
+
+  const createTradeMutation = api.trade.create.useMutation({
+    onSuccess: () => {
+      setOpen(false);
+      void util.trade.getAll.invalidate();
+    },
+    onError: () => alert("Something went wrong, please try again later."),
+  });
+
+  const meQuery = api.user.me.useQuery();
+  const user = meQuery.data;
+
+  const currentUserBadges = api.badge.getBadgesOwned.useQuery(
+    { userId: user?.id ?? "" },
+    { enabled: !!user },
+  );
+
+  const targetUserBadges = api.badge.getBadgesOwned.useQuery(
+    { username: targetUsername },
+    { enabled: !!targetUsername },
+  );
+
+  const targetUserBadgesLength = targetUserBadges.data?.length ?? 0;
+
+  const handleCurrentBadgeClick = (userBadge: UserBadge) => {
+    if (selectedBadges[userBadge.id]) {
+      setSelectedBadges((prev) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [userBadge.id]: _, ...rest } = prev;
+        return rest;
+      });
+    } else {
+      setSelectedBadges((prev) => ({ ...prev, [userBadge.id]: userBadge }));
+    }
+  };
+
+  const handleTargetBadgeClick = (userBadge: UserBadge) => {
+    if (selectedTargetBadges[userBadge.id]) {
+      setSelectedTargetBadges((prev) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [userBadge.id]: _, ...rest } = prev;
+        return rest;
+      });
+    } else {
+      setSelectedTargetBadges((prev) => ({
+        ...prev,
+        [userBadge.id]: userBadge,
+      }));
+    }
+  };
+
+  const handleSubmit = () => {
+    createTradeMutation.mutate({
+      to: targetUsername,
+      badgeIds: Object.keys(selectedBadges).map(Number),
+      requestedBadgeIds: Object.keys(selectedTargetBadges).map(Number),
+    });
+  };
+
+  useEffect(() => {
+    setSelectedTargetBadges({});
+  }, [targetUsername]);
+
+  useEffect(() => {
+    if (open) return;
+    setSelectedTargetBadges({});
+    setSelectedBadges({});
+    setTargetUsername("");
+  }, [open]);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">Trade Badges</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[800px]">
+        <DialogHeader>
+          <DialogTitle>Create new trade</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-end gap-2">
+            <Label htmlFor="Username" className="text-right">
+              Trade with
+            </Label>
+            <UsernameCombobox
+              className="w-[200px]"
+              onChange={setTargetUsername}
+            />
+          </div>
+          <div className="flex items-stretch gap-6">
+            <div className="flex flex-1 flex-col gap-2">
+              <h6>You send</h6>
+              <div className="flex flex-wrap gap-2 rounded-md border p-2">
+                {currentUserBadges.data?.map((userBadge) => (
+                  <BadgeCard
+                    className={
+                      selectedBadges[userBadge.id] ? "bg-gray-800" : ""
+                    }
+                    userBadge={userBadge}
+                    key={userBadge.id}
+                    onClick={handleCurrentBadgeClick}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col gap-2">
+              <h6>You receive</h6>
+              {!targetUsername && (
+                <div className="flex flex-1 items-center justify-center">
+                  <span className="text-sm text-gray-400">
+                    Select a user to trade with
+                  </span>
+                </div>
+              )}
+              {targetUsername &&
+                (targetUserBadgesLength > 0 ? (
+                  <div className="flex flex-wrap gap-2 rounded-md border p-2">
+                    {targetUserBadges.data?.map((userBadge) => (
+                      <BadgeCard
+                        className={
+                          selectedTargetBadges[userBadge.id]
+                            ? "bg-gray-800"
+                            : ""
+                        }
+                        userBadge={userBadge}
+                        key={userBadge.id}
+                        onClick={handleTargetBadgeClick}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-1 items-center justify-center">
+                    <span className="text-sm text-gray-400">
+                      {targetUserBadges.isLoading
+                        ? "Loading..."
+                        : "No badges found"}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
+          <div className="flex flex-1"></div>
+        </div>
+        <DialogFooter>
+          <Button type="submit" onClick={handleSubmit}>
+            Send Trade Offer
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function UsernameCombobox({
+  className = "",
+  onChange,
+}: {
+  className?: string;
+  onChange: (username: string) => unknown;
+}) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+
+  const getAllUsernameQuery = api.user.getAllUsernames.useQuery();
+  const usernames = getAllUsernameQuery.data ?? [];
+
+  const handleSelect = (username: string) => {
+    setValue(username);
+    setOpen(false);
+    onChange(username);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={`${className} justify-between`}
+        >
+          {value
+            ? usernames.find((username) => username === value)
+            : "Select username"}
+          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Search username" className="h-9" />
+          <CommandEmpty>No framework found.</CommandEmpty>
+          <CommandGroup>
+            {usernames.map((username) => (
+              <CommandItem
+                key={username}
+                onSelect={(currentValue) => {
+                  handleSelect(currentValue === value ? "" : currentValue);
+                }}
+              >
+                {username}
+                <CheckIcon
+                  className={clsx(
+                    "ml-auto h-4 w-4",
+                    username === value ? "opacity-100" : "opacity-0",
+                  )}
+                />
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
