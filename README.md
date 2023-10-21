@@ -11,5 +11,5 @@
  ·
  <a href="https://github.com/ShaneMaglangit/stampxl/issues">Issues</a>
  ·
- <a href="https://hanko.io">Learn more about Hanko</a>
+ <a href="https://hanko.io">Hanko</a>
 </p>
