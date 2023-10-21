@@ -196,6 +196,20 @@ export const badgeRouter = createTRPCRouter({
         });
       }
 
+      const claimHistory = await db.claimHistory.findFirst({
+        where: {
+          userId: user.sub,
+          claimTokenId: token.id,
+        },
+      });
+
+      if (claimHistory) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You have already claimed this badge.",
+        });
+      }
+
       const badge = await db.badge.findFirst({
         where: {
           id: token.badgeId,
