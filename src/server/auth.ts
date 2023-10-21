@@ -1,7 +1,4 @@
-import { type inferAsyncReturnType } from "@trpc/server";
-import type * as trpcNext from "@trpc/server/adapters/next";
 import { type NextApiRequest } from "next";
-import { decodeJwt } from "jose";
 
 export function getToken(req: NextApiRequest) {
   const authorization = req.headers.authorization?.split(" ");

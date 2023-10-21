@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 import { jwtVerify, createRemoteJWKSet } from "jose";
 
@@ -17,10 +17,12 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   } catch {
-    return NextResponse.redirect(new URL("/login", req.url));
+    if (!req.url.includes("login")) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
   }
 }
 
 export const config = {
-  exclude: ["/"],
+  matcher: ["/dashboard", "/claim", "/login"],
 };
