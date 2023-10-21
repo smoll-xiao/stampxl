@@ -46,6 +46,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@stampxl/components/common/Tooltip";
+import { type GetServerSidePropsContext, type InferGetServerSidePropsType } from "next";
+import { db } from "@stampxl/server/db";
+import { getToken } from "@stampxl/server/auth";
+import { decodeJwt } from "jose";
 
 type User = RouterOutputs["user"]["me"];
 type Trade = RouterOutputs["trade"]["getAll"][0];
@@ -59,9 +63,28 @@ type CreateBadgeFormValues = {
   tradeable: boolean;
 };
 
-export default function Dashboard() {
-  const meQuery = api.user.me.useQuery();
-  const hasCreatorRole = meQuery.data?.roles.includes("CREATOR");
+export async function getServerSideProps({ req }: GetServerSidePropsContext) {
+  const token = getToken(req);
+  if (!token) throw new Error("No token found");
+
+  const decodedToken = decodeJwt(token);
+
+  const user = await db.user.findUnique({
+    where: { id: decodedToken.sub },
+  });
+  if (!user) throw new Error("User not found");
+
+  return {
+    props: {
+      user,
+    },
+  };
+}
+
+export default function Dashboard({
+  user,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  const hasCreatorRole = user.roles.includes("CREATOR");
   return (
     <div className="flex w-full flex-col gap-10 p-4">
       <div className="flex flex-col gap-4">
@@ -76,7 +99,7 @@ export default function Dashboard() {
         <TemporaryColdStartClaimAlert />
         {hasCreatorRole && <CreatedBadgeList />}
       </div>
-      <BadgeBoard />
+      <BadgeBoard initialUserData={user} />
       <TradeList />
     </div>
   );
@@ -238,7 +261,8 @@ function TradeCard({ trade }: { trade: Trade }) {
   );
 }
 
-function BadgeBoard() {
+function BadgeBoard({ initialUserData }: { initialUserData: User }) {
+  const [user, setUser] = useState(initialUserData);
   const [activeGrid, setActiveGrid] = useState<number>();
   const [triggerDownload, setTriggerDownload] = useState(false);
   const [board, setBoard] = useState<Array<UserBadge | undefined>>(
@@ -248,7 +272,6 @@ function BadgeBoard() {
   const boardRef = useRef<HTMLDivElement>(null);
 
   const meQuery = api.user.me.useQuery();
-  const user = meQuery.data;
 
   const boardQuery = api.badge.getBoard.useQuery();
   const boardData = boardQuery.data;
@@ -285,6 +308,11 @@ function BadgeBoard() {
     const boardAsPNG = await toPng(boardRef.current);
     saveAs(boardAsPNG, "badge-board.png");
   };
+
+  useEffect(() => {
+    if (!meQuery.data) return;
+    setUser(meQuery.data);
+  }, [meQuery.data]);
 
   useEffect(() => {
     const newBoard: Array<UserBadge | undefined> = Array.from({
