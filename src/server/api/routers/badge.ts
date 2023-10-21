@@ -1,11 +1,9 @@
 import { OK, z } from "zod";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-} from "@stampxl/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "@stampxl/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
+import {Role} from "@prisma/client";
 
 export const badgeRouter = createTRPCRouter({
   create: publicProcedure
@@ -57,11 +55,11 @@ export const badgeRouter = createTRPCRouter({
       });
     }
 
-    const creatorRole = await db.userRole.findFirst({
+    const creatorRole = await db.user.findFirst({
       where: {
-        userId: user.sub,
-        role: {
-          name: "creator",
+        id: user.sub,
+        roles: {
+          has: Role.CREATOR,
         },
       },
     });

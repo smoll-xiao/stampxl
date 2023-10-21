@@ -5,7 +5,8 @@ import { api } from "@stampxl/utils/api";
 import "@stampxl/styles/globals.css";
 import { ThemeProvider } from "@stampxl/components/layout/ThemeProvider";
 import Head from "next/head";
-import {Toaster} from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+import { TooltipProvider } from "@stampxl/components/common/Tooltip";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -23,10 +24,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         defaultTheme="dark"
         disableTransitionOnChange
       >
-        <main className="container m-auto flex min-h-screen justify-center">
-          <Component {...pageProps} />
-        </main>
-        <Toaster/>
+        <TooltipProvider>
+          <main className="container m-auto flex min-h-screen justify-center">
+            <Component {...pageProps} />
+          </main>
+        </TooltipProvider>
+        <Toaster />
       </ThemeProvider>
     </>
   );

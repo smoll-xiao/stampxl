@@ -41,6 +41,11 @@ import {
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import LogoutButton from "@stampxl/components/auth/LogoutButton";
 import toast from "react-hot-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@stampxl/components/common/Tooltip";
 
 type User = RouterOutputs["user"]["me"];
 type Trade = RouterOutputs["trade"]["getAll"][0];
@@ -397,12 +402,12 @@ function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
   const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
 
   return (
-    <Card className="flex items-center gap-1 p-2">
+    <Card className="flex items-center gap-2 p-2">
       <div
-        className="svg-preview-container h-16 w-16"
+        className="svg-preview-container h-12 w-12"
         dangerouslySetInnerHTML={{ __html: svgElement }}
       />
-      <div className="flex-1">
+      <div className="flex-1 overflow-hidden">
         <div className="flex flex-wrap items-center gap-2">
           <h6 className="text-lg font-bold">{badge.name}</h6>
           <Chip>
@@ -410,7 +415,14 @@ function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
           </Chip>
           {badge.tradeable && <Chip>Tradeable</Chip>}
         </div>
-        <p>{badge.description}</p>
+        <Tooltip>
+          <TooltipTrigger className="w-full truncate">
+            {badge.description}
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{badge.description}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
       <CreatedBadgeActions badge={badge} />
     </Card>
