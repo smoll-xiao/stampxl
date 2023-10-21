@@ -19,12 +19,12 @@ export default function Home() {
       </h1>
       <p className="text-center text-xl text-muted-foreground">
         Built your empire of pixel badges. Show off your collection that
-        reflects your personality and achievements. Participate in events or trade with
-        others to grow your inventory.
+        reflects your personality and achievements. Participate in events or
+        trade with others to grow your inventory.
       </p>
       <div className="flex gap-2">
         <Button asChild variant="outline">
-          <Link href="/">Contribute</Link>
+          <a href="https://github.com/ShaneMaglangit/stampxl">Contribute</a>
         </Button>
         <Button asChild>
           <Link href="/dashboard">Get Started</Link>
@@ -56,7 +56,7 @@ function Navbar() {
           </Link>
         </NavigationMenuItem>
         <NavigationMenuItem className="justify-self-end">
-          <Link href="/dashboard" legacyBehavior passHref>
+          <Link href="/login" legacyBehavior passHref>
             <NavigationMenuLink
               className={clsx(navigationMenuTriggerStyle(), "gap-2")}
             >
