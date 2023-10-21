@@ -20,7 +20,7 @@ export default function LogoutButton() {
   const handleClick = async () => {
     try {
       await hanko?.user.logout();
-      await router.replace("/");
+      await router.push("/");
       return;
     } catch (error) {
       console.error("Error during logout:", error);
