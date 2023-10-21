@@ -1,13 +1,12 @@
-import { useEffect, useCallback, useState } from "react";
-import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { register, type Hanko } from "@teamhanko/hanko-elements";
 import { env } from "@stampxl/env.mjs";
 import { api } from "@stampxl/utils/api";
+import { redirect } from "next/navigation";
 
 const hankoApi = env.NEXT_PUBLIC_HANKO_API_URL;
 
 export default function HankoAuth() {
-  const router = useRouter();
   const createUserMutation = api.user.create.useMutation();
 
   const [hanko, setHanko] = useState<Hanko>();
@@ -18,17 +17,13 @@ export default function HankoAuth() {
     );
   }, []);
 
-  const redirectAfterLogin = useCallback(() => {
-    void router.replace("/dashboard");
-  }, [router]);
-
   useEffect(
     () =>
       hanko?.onAuthFlowCompleted(({ userID }) => {
         createUserMutation.mutate({ id: userID });
-        redirectAfterLogin();
+        redirect("/dashboard");
       }),
-    [hanko, redirectAfterLogin, createUserMutation],
+    [hanko, createUserMutation],
   );
 
   useEffect(() => {
