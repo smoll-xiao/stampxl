@@ -301,7 +301,7 @@ function BadgeBoard() {
         </h2>
         <div className="flex items-center gap-2">
           {user && <EditUsernameDialog user={user} />}
-          <Button onClick={() => void handleSave()}>Save</Button>
+          <Button onClick={() => void handleSave()}>Save Board</Button>
         </div>
       </div>
       <div className="flex flex-col gap-2 ">
