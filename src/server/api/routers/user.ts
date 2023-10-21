@@ -1,10 +1,8 @@
 import { OK, z } from "zod";
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-} from "@stampxl/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "@stampxl/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { Role } from "@prisma/client";
 
 export const userRouter = createTRPCRouter({
   create: publicProcedure
@@ -24,30 +22,11 @@ export const userRouter = createTRPCRouter({
 
       if (existingUser) return OK(null);
 
-      const role = await db.role.findFirst({
-        where: {
-          name: "user",
-        },
-      });
-
-      if (!role) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "User role not found.",
-        });
-      }
-
       await db.user.create({
         data: {
-          username: `@guest${input.id}`,
+          username: `newbie-${input.id}`,
           id: input.id,
-        },
-      });
-
-      await db.userRole.create({
-        data: {
-          userId: input.id,
-          roleId: role.id,
+          roles: [Role.USER],
         },
       });
 
@@ -59,40 +38,6 @@ export const userRouter = createTRPCRouter({
 
       return OK(null);
     }),
-  roles: publicProcedure.query(async ({ ctx }) => {
-    const { db, user } = ctx;
-
-    if (!user?.sub) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to perform this operation.",
-      });
-    }
-
-    const creatorRole = await db.userRole.findFirst({
-      where: {
-        userId: user.sub,
-        role: {
-          name: "creator",
-        },
-      },
-    });
-
-    if (!creatorRole) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be a creator to perform this operation.",
-      });
-    }
-
-    const roles = await db.role.findMany({
-      select: {
-        name: true,
-      },
-    });
-
-    return roles.map((role) => role.name);
-  }),
   me: publicProcedure.query(async ({ ctx }) => {
     const { db, user } = ctx;
 

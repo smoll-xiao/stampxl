@@ -11,7 +11,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <>
       <Head>
-        <title>Stampxl</title>
+        <title>Stampxl | Collect, Trade, Pixel Badges</title>
         <meta
           name="description"
           content="Collect virtual pixel badges to showcase your personality and achievements."
@@ -23,7 +23,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         defaultTheme="dark"
         disableTransitionOnChange
       >
-        <main className="container m-auto flex min-h-screen justify-center p-4">
+        <main className="container m-auto flex min-h-screen justify-center">
           <Component {...pageProps} />
         </main>
         <Toaster/>

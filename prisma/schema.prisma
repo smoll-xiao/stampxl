@@ -6,29 +6,21 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Role {
-  id        String     @id
-  name      String
-  UserRoles UserRole[]
-}
-
-model UserRole {
-  id     Int    @id @default(autoincrement())
-  userId String
-  roleId String
-  user   User   @relation(fields: [userId], references: [id])
-  role   Role   @relation(fields: [roleId], references: [id])
+enum Role {
+  ADMIN
+  USER
+  CREATOR
 }
 
 model User {
   id           String         @id
   username     String         @unique
   badges       Badge[]
-  UserRoles    UserRole[]
+  roles        Role[]
   userBadges   UserBadge[]
   tradeCreated Trade[]        @relation(name: "tradeCreated")
   tradeOffers  Trade[]        @relation(name: "tradeOffers")

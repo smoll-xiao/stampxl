@@ -55,11 +55,10 @@ type CreateBadgeFormValues = {
 };
 
 export default function Dashboard() {
-  const rolesQuery = api.user.roles.useQuery();
-  const roles = rolesQuery.data ?? [];
-  const hasCreatorRole = roles.includes("creator");
+  const meQuery = api.user.me.useQuery();
+  const hasCreatorRole = meQuery.data?.roles.includes("CREATOR");
   return (
-    <div className="flex w-full flex-col gap-10">
+    <div className="flex w-full flex-col gap-10 p-4">
       <div className="flex items-center justify-between gap-1">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex gap-2">
@@ -141,7 +140,7 @@ function TradeCard({ trade }: { trade: Trade }) {
           <div className="flex flex-1 flex-col gap-4">
             <div className="flex flex-col gap-1">
               <span className="text-lg font-bold">From</span>
-              <span className="text-sm">{trade.sender.username}</span>
+              <span className="text-sm">@{trade.sender.username}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {badges.sender.length === 0 && "Nothing to trade"}
@@ -158,7 +157,7 @@ function TradeCard({ trade }: { trade: Trade }) {
             <div className="flex flex-1 flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <span className="text-lg font-bold">To</span>
-                <span className="text-sm">{trade.receiver.username}</span>
+                <span className="text-sm">@{trade.receiver.username}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {badges.receiver.length === 0 && "Nothing to trade"}
@@ -298,7 +297,7 @@ function BadgeBoard() {
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
         <h2 className="text-xl font-bold">
-          {user?.username ?? "Unknown"}&apos;s board
+          @{user?.username ?? "Unknown"}&apos;s board
         </h2>
         <div className="flex items-center gap-2">
           {user && <EditUsernameDialog user={user} />}
@@ -331,7 +330,7 @@ function BadgeBoard() {
             );
           })}
           <div className="absolute bottom-2 right-2 rounded-lg bg-gray-800 px-2 py-1 opacity-80">
-            {user?.username ?? "Unknown"}
+            @{user?.username ?? "Unknown"}
           </div>
         </div>
         <BadgeInventory
@@ -662,7 +661,7 @@ function EditUsernameDialog({ user }: { user: User }) {
             <Input
               id="Username"
               className="col-span-3"
-              value={username}
+              value={`@${username}`}
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
@@ -712,7 +711,8 @@ function TradeBadgeDialog() {
     { enabled: !!targetUsername },
   );
 
-  const targetUserBadgesLength = targetUserBadges.data?.length ?? 0;
+  const hasCurrentUserBadges = (currentUserBadges.data?.length ?? 0) > 0;
+  const hasTargetUserBadges = (targetUserBadges.data?.length ?? 0) > 0;
 
   const handleCurrentBadgeClick = (userBadge: UserBadge) => {
     if (selectedBadges[userBadge.id]) {
@@ -782,18 +782,28 @@ function TradeBadgeDialog() {
           <div className="flex items-stretch gap-6">
             <div className="flex flex-1 flex-col gap-2">
               <h6>You send</h6>
-              <div className="flex flex-wrap gap-2 rounded-md border p-2">
-                {currentUserBadges.data?.map((userBadge) => (
-                  <BadgeCard
-                    className={
-                      selectedBadges[userBadge.id] ? "bg-gray-800" : ""
-                    }
-                    userBadge={userBadge}
-                    key={userBadge.id}
-                    onClick={handleCurrentBadgeClick}
-                  />
-                ))}
-              </div>
+              {hasCurrentUserBadges ? (
+                <div className="flex flex-wrap gap-2 rounded-md border p-2">
+                  {currentUserBadges.data?.map((userBadge) => (
+                    <BadgeCard
+                      className={
+                        selectedBadges[userBadge.id] ? "bg-gray-800" : ""
+                      }
+                      userBadge={userBadge}
+                      key={userBadge.id}
+                      onClick={handleCurrentBadgeClick}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-1 items-center justify-center">
+                  <span className="text-sm text-gray-400">
+                    {currentUserBadges.isLoading
+                      ? "Loading..."
+                      : "No badges found"}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex flex-1 flex-col gap-2">
               <h6>You receive</h6>
@@ -805,7 +815,7 @@ function TradeBadgeDialog() {
                 </div>
               )}
               {targetUsername &&
-                (targetUserBadgesLength > 0 ? (
+                (hasTargetUserBadges ? (
                   <div className="flex flex-wrap gap-2 rounded-md border p-2">
                     {targetUserBadges.data?.map((userBadge) => (
                       <BadgeCard
@@ -872,7 +882,7 @@ export function UsernameCombobox({
           className={`${className} justify-between`}
         >
           {value
-            ? usernames.find((username) => username === value)
+            ? `@${usernames.find((username) => username === value)}`
             : "Select username"}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -889,7 +899,7 @@ export function UsernameCombobox({
                   handleSelect(currentValue === value ? "" : currentValue);
                 }}
               >
-                {username}
+                @{username}
                 <CheckIcon
                   className={clsx(
                     "ml-auto h-4 w-4",

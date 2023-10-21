@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { type Hanko } from "@teamhanko/hanko-elements";
 import { Button } from "@stampxl/components/common/Button";
 import { env } from "@stampxl/env.mjs";
-import { LogOutIcon } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 const hankoApi = env.NEXT_PUBLIC_HANKO_API_URL;
 
@@ -29,7 +29,7 @@ export default function LogoutButton() {
 
   return (
     <Button onClick={() => void handleClick()} variant="ghost" className="p-2">
-      <LogOutIcon className="h-5 w-5" />
+      <LogOut className="h-5 w-5" />
     </Button>
   );
 }
