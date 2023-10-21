@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { type Hanko } from "@teamhanko/hanko-elements";
-import { Button } from "@tatak-badges/components/common/Button";
-import { env } from "@tatak-badges/env.mjs";
+import { Button } from "@stampxl/components/common/Button";
+import { env } from "@stampxl/env.mjs";
 import { LogOutIcon } from "lucide-react";
 
 const hankoApi = env.NEXT_PUBLIC_HANKO_API_URL;

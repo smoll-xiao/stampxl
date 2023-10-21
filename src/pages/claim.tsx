@@ -4,10 +4,10 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-} from "@tatak-badges/components/common/Card";
-import { Input } from "@tatak-badges/components/common/Input";
-import { Button } from "@tatak-badges/components/common/Button";
-import { api } from "@tatak-badges/utils/api";
+} from "@stampxl/components/common/Card";
+import { Input } from "@stampxl/components/common/Input";
+import { Button } from "@stampxl/components/common/Button";
+import { api } from "@stampxl/utils/api";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import toast from "react-hot-toast";

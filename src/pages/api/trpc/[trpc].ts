@@ -1,8 +1,8 @@
 import { createNextApiHandler } from "@trpc/server/adapters/next";
 
-import { env } from "@tatak-badges/env.mjs";
-import { appRouter } from "@tatak-badges/server/api/root";
-import { createTRPCContext } from "@tatak-badges/server/api/trpc";
+import { env } from "@stampxl/env.mjs";
+import { appRouter } from "@stampxl/server/api/root";
+import { createTRPCContext } from "@stampxl/server/api/trpc";
 
 // export API handler
 export default createNextApiHandler({

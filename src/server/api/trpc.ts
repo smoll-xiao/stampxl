@@ -11,8 +11,8 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { db } from "@tatak-badges/server/db";
-import { getToken } from "@tatak-badges/server/auth";
+import { db } from "@stampxl/server/db";
+import { getToken } from "@stampxl/server/auth";
 import { decodeJwt } from "jose";
 
 /**

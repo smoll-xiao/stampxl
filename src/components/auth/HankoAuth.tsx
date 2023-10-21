@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { register, type Hanko } from "@teamhanko/hanko-elements";
-import { env } from "@tatak-badges/env.mjs";
-import { api } from "@tatak-badges/utils/api";
+import { env } from "@stampxl/env.mjs";
+import { api } from "@stampxl/utils/api";
 
 const hankoApi = env.NEXT_PUBLIC_HANKO_API_URL;
 

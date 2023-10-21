@@ -1,9 +1,9 @@
 import { type AppType } from "next/app";
 
-import { api } from "@tatak-badges/utils/api";
+import { api } from "@stampxl/utils/api";
 
-import "@tatak-badges/styles/globals.css";
-import { ThemeProvider } from "@tatak-badges/components/layout/ThemeProvider";
+import "@stampxl/styles/globals.css";
+import { ThemeProvider } from "@stampxl/components/layout/ThemeProvider";
 import Head from "next/head";
 import {Toaster} from "react-hot-toast";
 

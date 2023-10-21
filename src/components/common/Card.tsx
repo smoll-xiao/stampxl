@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { cn } from "@tatak-badges/utils"
+import { cn } from "@stampxl/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,

@@ -1,4 +1,4 @@
-import { Button } from "@tatak-badges/components/common/Button";
+import { Button } from "@stampxl/components/common/Button";
 import {
   Dialog,
   DialogContent,
@@ -7,21 +7,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@tatak-badges/components/common/Dialog";
-import { Label } from "@tatak-badges/components/common/Label";
-import { Input } from "@tatak-badges/components/common/Input";
-import { Switch } from "@tatak-badges/components/common/Switch";
+} from "@stampxl/components/common/Dialog";
+import { Label } from "@stampxl/components/common/Label";
+import { Input } from "@stampxl/components/common/Input";
+import { Switch } from "@stampxl/components/common/Switch";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
-import { api, type RouterOutputs } from "@tatak-badges/utils/api";
-import { Card } from "@tatak-badges/components/common/Card";
-import Chip from "@tatak-badges/components/common/Chip";
+import { api, type RouterOutputs } from "@stampxl/utils/api";
+import { Card } from "@stampxl/components/common/Card";
+import Chip from "@stampxl/components/common/Chip";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tatak-badges/components/common/DropdownMenu";
+} from "@stampxl/components/common/DropdownMenu";
 import { MoreVertical, Sparkles, User, Trash } from "lucide-react";
 import { clsx } from "clsx";
 import { toPng } from "html-to-image";
@@ -30,16 +30,16 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tatak-badges/components/common/Popover";
+} from "@stampxl/components/common/Popover";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@tatak-badges/components/common/Command";
+} from "@stampxl/components/common/Command";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import LogoutButton from "@tatak-badges/components/auth/LogoutButton";
+import LogoutButton from "@stampxl/components/auth/LogoutButton";
 import toast from "react-hot-toast";
 
 type User = RouterOutputs["user"]["me"];

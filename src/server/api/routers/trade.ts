@@ -1,7 +1,7 @@
 import {
   createTRPCRouter,
   publicProcedure,
-} from "@tatak-badges/server/api/trpc";
+} from "@stampxl/server/api/trpc";
 import { OK, z } from "zod";
 import { TRPCError } from "@trpc/server";
 

@@ -10,7 +10,7 @@
     "cssVariables": true
   },
   "aliases": {
-    "components": "@tatak-badges/components",
-    "utils": "@tatak-badges/utils"
+    "components": "@stampxl/components",
+    "utils": "@stampxl/utils"
   }
 }

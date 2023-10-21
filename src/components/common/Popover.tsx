@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
-import { cn } from "@tatak-badges/utils"
+import { cn } from "@stampxl/utils"
 
 const Popover = PopoverPrimitive.Root
 

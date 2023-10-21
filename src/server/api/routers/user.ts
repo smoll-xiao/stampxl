@@ -3,7 +3,7 @@ import { OK, z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
-} from "@tatak-badges/server/api/trpc";
+} from "@stampxl/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({

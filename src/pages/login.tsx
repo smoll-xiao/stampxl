@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 export default function LoginPage() {
   const HankoAuth = dynamic(
-    () => import("@tatak-badges/components/auth/HankoAuth"),
+    () => import("@stampxl/components/auth/HankoAuth"),
     { ssr: false },
   );
   return (
