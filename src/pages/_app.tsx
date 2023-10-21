@@ -11,7 +11,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <>
       <Head>
-        <title>Tatak Badges</title>
+        <title>Stampxl</title>
         <meta
           name="description"
           content="Collect virtual pixel badges to showcase your personality and achievements."
