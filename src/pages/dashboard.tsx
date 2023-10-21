@@ -451,8 +451,22 @@ function BadgeCard({
 }
 
 function CreatedBadgeActions({ badge }: { badge: BadgeCreated }) {
-  const disableClaimMutation = api.badge.disable.useMutation();
-  const deleteMutation = api.badge.delete.useMutation();
+  const utils = api.useContext();
+
+  const disableClaimMutation = api.badge.disable.useMutation({
+    onSuccess: () => {
+      void utils.badge.getAllCreated.invalidate();
+      toast.success("Claims has been disabled!");
+    },
+  });
+
+  const deleteMutation = api.badge.delete.useMutation({
+    onSuccess: () => {
+      void utils.badge.getAllCreated.invalidate();
+      toast.success("Badge deleted successfully!");
+    },
+  });
+
   const generateClaimTokenMutation = api.badge.generateClaimToken.useMutation({
     onSuccess: (token) => {
       const claimURL = `${window.location.origin}/claim?token=${token}`;
