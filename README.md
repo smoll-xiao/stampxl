@@ -1,28 +1,15 @@
-# Create T3 App
+![image](https://github.com/ShaneMaglangit/stampxl/assets/53674742/ba1ac51b-0579-436a-a51f-906a77c9e39d)
+<h3 align="center">👑 Stampxl</h3>
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
-
-## What's next? How do I make an app with this?
-
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
-
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
-
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
-
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+<p align="center">
+ Built your empire of pixel badges. Show off your collection that reflects your personality and achievements. Participate in events or trade with others to grow your inventory (inspired by <a href="https://stampxl.shanemaglangit.com">Holopin.io</a>)
+ <br />
+ <a href="https://stampxl.shanemaglangit.com"><strong>Learn more »</strong></a>
+ <br />
+ <br />
+ <a href="https://stampxl.shanemaglangit.com">Website</a>
+ ·
+ <a href="https://github.com/ShaneMaglangit/stampxl/issues">Issues</a>
+ ·
+ <a href="https://hanko.io">Learn more about Hanko</a>
+</p>
