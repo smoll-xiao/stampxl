@@ -64,18 +64,39 @@ export default function Dashboard() {
   const hasCreatorRole = meQuery.data?.roles.includes("CREATOR");
   return (
     <div className="flex w-full flex-col gap-10 p-4">
-      <div className="flex items-center justify-between gap-1">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className="flex gap-2">
-          <TradeBadgeDialog />
-          {hasCreatorRole && <CreateBadgeDialog />}
-          <LogoutButton />
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-1">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <div className="flex gap-2">
+            <TradeBadgeDialog />
+            {hasCreatorRole && <CreateBadgeDialog />}
+            <LogoutButton />
+          </div>
         </div>
+        <TemporaryColdStartClaimAlert />
+        {hasCreatorRole && <CreatedBadgeList />}
       </div>
-      {hasCreatorRole && <CreatedBadgeList />}
       <BadgeBoard />
       <TradeList />
     </div>
+  );
+}
+
+// TODO: Remove this after distribution period has ended.
+function TemporaryColdStartClaimAlert() {
+  return (
+    <p className="rounded bg-gray-800 px-4 py-3 text-sm">
+      Hey! We&apos;re giving away free &quot;Cold Start&quot; badges to the
+      first 100 users to join us! Here&apos;s a claim link that you can
+      use:&nbsp;
+      <a
+        className="underline"
+        href="https://stampxl.shanemaglangit.com/claim?token=359b0cfb-eabe-421b-8cb8-38cbbb9d712c"
+        target="_blank"
+      >
+        https://stampxl.shanemaglangit.com/claim?token=359b0cfb-eabe-421b-8cb8-38cbbb9d712c
+      </a>
+    </p>
   );
 }
 
