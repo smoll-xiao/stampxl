@@ -28,7 +28,7 @@ export default function HankoAuth() {
         createUserMutation.mutate({ id: userID });
         redirectAfterLogin();
       }),
-    [hanko, redirectAfterLogin],
+    [hanko, redirectAfterLogin, createUserMutation],
   );
 
   useEffect(() => {

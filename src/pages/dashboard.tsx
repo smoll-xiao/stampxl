@@ -1,4 +1,4 @@
-import { Button } from "@tatak-badges/components/ui/Button";
+import { Button } from "@tatak-badges/components/common/Button";
 import {
   Dialog,
   DialogContent,
@@ -7,21 +7,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@tatak-badges/components/ui/Dialog";
-import { Label } from "@tatak-badges/components/ui/Label";
-import { Input } from "@tatak-badges/components/ui/Input";
-import { Switch } from "@tatak-badges/components/ui/Switch";
+} from "@tatak-badges/components/common/Dialog";
+import { Label } from "@tatak-badges/components/common/Label";
+import { Input } from "@tatak-badges/components/common/Input";
+import { Switch } from "@tatak-badges/components/common/Switch";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { api, type RouterOutputs } from "@tatak-badges/utils/api";
-import { Card } from "@tatak-badges/components/ui/Card";
-import Chip from "@tatak-badges/components/ui/Chip";
+import { Card } from "@tatak-badges/components/common/Card";
+import Chip from "@tatak-badges/components/common/Chip";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tatak-badges/components/ui/DropdownMenu";
+} from "@tatak-badges/components/common/DropdownMenu";
 import { MoreVertical, Sparkles, User, Trash } from "lucide-react";
 import { clsx } from "clsx";
 import { toPng } from "html-to-image";
@@ -30,15 +30,16 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tatak-badges/components/ui/Popover";
+} from "@tatak-badges/components/common/Popover";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@tatak-badges/components/ui/Command";
+} from "@tatak-badges/components/common/Command";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
+import LogoutButton from "@tatak-badges/components/auth/LogoutButton";
 
 export default function Dashboard() {
   const rolesQuery = api.user.roles.useQuery();
@@ -51,6 +52,7 @@ export default function Dashboard() {
         <div className="flex gap-2">
           <TradeBadgeDialog />
           {hasCreatorRole && <CreateBadgeDialog />}
+          <LogoutButton />
         </div>
       </div>
       {hasCreatorRole && <CreatedBadgeList />}

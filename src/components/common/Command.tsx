@@ -4,7 +4,7 @@ import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { Command as CommandPrimitive } from "cmdk";
 
 import { cn } from "@tatak-badges/utils";
-import { Dialog, DialogContent } from "@tatak-badges/components/ui/Dialog";
+import { Dialog, DialogContent } from "@tatak-badges/components/common/Dialog";
 
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,

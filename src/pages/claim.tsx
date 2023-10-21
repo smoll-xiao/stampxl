@@ -4,12 +4,12 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-} from "@tatak-badges/components/ui/Card";
-import { Input } from "@tatak-badges/components/ui/Input";
-import { Button } from "@tatak-badges/components/ui/Button";
+} from "@tatak-badges/components/common/Card";
+import { Input } from "@tatak-badges/components/common/Input";
+import { Button } from "@tatak-badges/components/common/Button";
 import { api } from "@tatak-badges/utils/api";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function Claim() {
   const router = useRouter();
@@ -44,7 +44,10 @@ export default function Claim() {
             }}
           />
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex justify-end gap-1">
+          <Button variant="ghost" asChild>
+            <Link href="/dashboard">Return to Dashboard</Link>
+          </Button>
           <Button onClick={handleClaimBadge}>Claim</Button>
         </CardFooter>
       </Card>
