@@ -46,10 +46,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@stampxl/components/common/Tooltip";
-import { type GetServerSidePropsContext, type InferGetServerSidePropsType } from "next";
+import {
+  type GetServerSidePropsContext,
+  type InferGetServerSidePropsType,
+} from "next";
 import { db } from "@stampxl/server/db";
 import { getToken } from "@stampxl/server/auth";
 import { decodeJwt } from "jose";
+import Progress from "@stampxl/components/common/Progress";
 
 type User = RouterOutputs["user"]["me"];
 type Trade = RouterOutputs["trade"]["getAll"][0];
@@ -124,21 +128,21 @@ function TemporaryColdStartClaimAlert() {
 }
 
 function TradeList() {
-  const allTradesQuery = api.trade.getAll.useQuery();
-  const allTrades = allTradesQuery.data ?? [];
+  const { data: allTrades, isLoading } = api.trade.getAll.useQuery();
+  const hasTrades = !allTrades || allTrades.length > 0;
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-xl font-bold">Trades</h2>
+      <h2 className="flex items-center gap-2 text-xl font-bold">
+        Trades {isLoading && <Progress />}
+      </h2>
       <div className="flex flex-col gap-2">
-        {allTrades.length === 0 && (
+        {!hasTrades && (
           <div>
             You have no pending trade requests/offer. Click the &quot;Trade
             Badge&quot; to create one.
           </div>
         )}
-        {allTrades.map((trade) => (
-          <TradeCard key={trade.id} trade={trade} />
-        ))}
+        {allTrades?.map((trade) => <TradeCard key={trade.id} trade={trade} />)}
       </div>
     </div>
   );
@@ -276,11 +280,11 @@ function BadgeBoard({ initialUserData }: { initialUserData: User }) {
   const boardQuery = api.badge.getBoard.useQuery();
   const boardData = boardQuery.data;
 
-  const getBadgesOwnedQuery = api.badge.getBadgesOwned.useQuery(
-    { userId: user?.id ?? "" },
-    { enabled: !!user },
-  );
-  const userBadges = getBadgesOwnedQuery.data ?? [];
+  const { data: userBadges, isLoading: badgeLoading } =
+    api.badge.getBadgesOwned.useQuery(
+      { userId: user?.id ?? "" },
+      { enabled: !!user },
+    );
 
   const saveBoardMutation = api.badge.saveBoard.useMutation({
     onSuccess: () => {
@@ -387,10 +391,18 @@ function BadgeBoard({ initialUserData }: { initialUserData: User }) {
             @{user?.username ?? "Unknown"}
           </div>
         </div>
-        <BadgeInventory
-          userBadges={userBadges}
-          onBadgeClick={handleBadgeClick}
-        />
+        {badgeLoading && (
+          <h5 className="text-md flex items-center gap-2 font-bold">
+            Inventory
+            <Progress />
+          </h5>
+        )}
+        {!badgeLoading && userBadges && (
+          <BadgeInventory
+            userBadges={userBadges}
+            onBadgeClick={handleBadgeClick}
+          />
+        )}
       </div>
     </div>
   );
