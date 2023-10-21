@@ -337,10 +337,14 @@ function BadgeInventory({
   userBadges: UserBadge[];
   onBadgeClick: (userBadge: UserBadge) => void;
 }) {
+  const hasBadges = userBadges.length > 0;
   return (
     <div className="flex flex-col gap-2">
       <h5 className="text-md font-bold">Inventory</h5>
       <div className="flex flex-wrap gap-2">
+        {!hasBadges && (
+          <div className="col-span-3">You do not own any badge.</div>
+        )}
         {userBadges.map((userBadge) => (
           <BadgeCard
             userBadge={userBadge}

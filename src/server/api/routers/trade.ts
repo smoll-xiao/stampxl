@@ -223,17 +223,35 @@ export const tradeRouter = createTRPCRouter({
         },
       });
 
-      for (const tradeItem of trade.tradeItem) {
+      const badges = await db.userBadge.findMany({
+        where: {
+          id: {
+            in: trade.tradeItem.map((tradeItem) => tradeItem.userBadgeId),
+          },
+        },
+      });
+
+      for (const badge of badges) {
         await db.userBadge.update({
           where: {
-            id: tradeItem.userBadgeId,
+            id: badge.id,
           },
           data: {
             userId:
-              user.sub === trade.senderId ? trade.receiverId : trade.senderId,
+              badge.userId === trade.senderId
+                ? trade.receiverId
+                : trade.senderId,
           },
         });
       }
+
+      await db.boardBadge.deleteMany({
+        where: {
+          userBadgeId: {
+            in: trade.tradeItem.map((tradeItem) => tradeItem.userBadgeId),
+          },
+        },
+      });
 
       return OK(null);
     }),
