@@ -10,6 +10,7 @@ import { Button } from "@tatak-badges/components/common/Button";
 import { api } from "@tatak-badges/utils/api";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function Claim() {
   const router = useRouter();
@@ -20,10 +21,10 @@ export default function Claim() {
   const claimBadgeMutation = api.badge.claimBadge.useMutation({
     onSuccess: () => {
       void router.push(pathname);
-      alert("Badge claimed!");
+      toast.success("Badge claimed!");
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error(error.message);
     },
   });
 

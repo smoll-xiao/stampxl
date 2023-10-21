@@ -40,6 +40,7 @@ import {
 } from "@tatak-badges/components/common/Command";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import LogoutButton from "@tatak-badges/components/auth/LogoutButton";
+import toast from "react-hot-toast";
 
 type User = RouterOutputs["user"]["me"];
 type Trade = RouterOutputs["trade"]["getAll"][0];
@@ -104,21 +105,21 @@ function TradeCard({ trade }: { trade: Trade }) {
   const acceptTradeMutation = api.trade.accept.useMutation({
     onSuccess: () => {
       void utils.trade.getAll.invalidate();
-      alert("Trade accepted!");
+      toast.success("Trade accepted!");
     },
   });
 
   const rejectTradeMutation = api.trade.reject.useMutation({
     onSuccess: () => {
       void utils.trade.getAll.invalidate();
-      alert("Trade rejected!");
+      toast.success("Trade rejected!");
     },
   });
 
   const cancelTradeMutation = api.trade.cancel.useMutation({
     onSuccess: () => {
       void utils.trade.getAll.invalidate();
-      alert("Trade cancelled!");
+      toast.success("Trade cancelled!");
     },
   });
 
@@ -235,7 +236,7 @@ function BadgeBoard() {
 
   const saveBoardMutation = api.badge.saveBoard.useMutation({
     onSuccess: () => {
-      alert("Board saved!");
+      toast.success("Board saved!");
     },
   });
 
@@ -281,8 +282,7 @@ function BadgeBoard() {
     }
 
     if (!boardData) {
-      alert("Error loading board!");
-      return;
+      toast.error("Error loading board!");
     } else {
       void downloadBoard();
       saveBoardMutation.mutate({
@@ -290,6 +290,7 @@ function BadgeBoard() {
         userBadgeIds: board.map((b) => b?.id),
       });
     }
+
     setTriggerDownload(false);
   }, [saveBoardMutation, board, boardData, triggerDownload, activeGrid]);
 
@@ -445,7 +446,7 @@ function CreatedBadgeActions({ badge }: { badge: BadgeCreated }) {
     onSuccess: (token) => {
       const claimURL = `${window.location.origin}/claim?token=${token}`;
       void navigator.clipboard.writeText(claimURL);
-      alert("Claim link copied to clipboard!");
+      toast.success("Claim link copied to clipboard!");
     },
   });
 
@@ -512,7 +513,7 @@ function CreateBadgeDialog() {
       setOpen(false);
       void utils.badge.getAllCreated.invalidate();
     },
-    onError: () => alert("Something went wrong, please try again later."),
+    onError: () => toast.error("Something went wrong, please try again later."),
   });
 
   const handleSVGFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -635,7 +636,7 @@ function EditUsernameDialog({ user }: { user: User }) {
       setOpen(false);
       void utils.user.me.invalidate();
     },
-    onError: () => alert("Something went wrong, please try again later."),
+    onError: () => toast.error("Something went wrong, please try again later."),
   });
 
   const handleSubmit = () => updateUsernameMutation.mutate({ username });
@@ -695,7 +696,7 @@ function TradeBadgeDialog() {
       setOpen(false);
       void util.trade.getAll.invalidate();
     },
-    onError: () => alert("Something went wrong, please try again later."),
+    onError: () => toast.error("Something went wrong, please try again later."),
   });
 
   const meQuery = api.user.me.useQuery();

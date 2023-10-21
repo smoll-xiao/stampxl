@@ -5,6 +5,7 @@ import { api } from "@tatak-badges/utils/api";
 import "@tatak-badges/styles/globals.css";
 import { ThemeProvider } from "@tatak-badges/components/layout/ThemeProvider";
 import Head from "next/head";
+import {Toaster} from "react-hot-toast";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -25,6 +26,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <main className="container m-auto flex min-h-screen justify-center p-4">
           <Component {...pageProps} />
         </main>
+        <Toaster/>
       </ThemeProvider>
     </>
   );
