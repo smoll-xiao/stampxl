@@ -132,7 +132,7 @@ function TradeList() {
   const hasTrades = !allTrades || allTrades.length > 0;
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="flex items-center gap-2 text-xl font-bold">
+      <h2 className="flex items-center gap-2 font-bold">
         Trades {isLoading && <Progress />}
       </h2>
       <div className="flex flex-col gap-2">
@@ -392,7 +392,7 @@ function BadgeBoard({ initialUserData }: { initialUserData: User }) {
           </div>
         </div>
         {badgeLoading && (
-          <h5 className="text-md flex items-center gap-2 font-bold">
+          <h5 className="flex items-center gap-2 font-bold">
             Inventory
             <Progress />
           </h5>
@@ -418,7 +418,7 @@ function BadgeInventory({
   const hasBadges = userBadges.length > 0;
   return (
     <div className="flex flex-col gap-2">
-      <h5 className="text-md font-bold">Inventory</h5>
+      <h5 className="font-bold">Inventory</h5>
       <div className="flex flex-wrap gap-2">
         {!hasBadges && (
           <div className="col-span-3">You do not own any badge.</div>
