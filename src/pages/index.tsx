@@ -7,7 +7,6 @@ import {
 } from "@stampxl/components/common/NavigationMenu";
 import Link from "next/link";
 import { LogIn } from "lucide-react";
-import { clsx } from "clsx";
 import { Button } from "@stampxl/components/common/Button";
 
 export default function Home() {
@@ -57,10 +56,9 @@ function Navbar() {
         </NavigationMenuItem>
         <NavigationMenuItem className="justify-self-end">
           <Link href="/login" legacyBehavior passHref>
-            <NavigationMenuLink
-              className={clsx(navigationMenuTriggerStyle(), "gap-2")}
-            >
-              <LogIn className="h-4 w-4" /> Login
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <LogIn className="mr-1 h-4 w-4" />
+              Login
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
