@@ -3,7 +3,7 @@ import { OK, z } from "zod";
 import { createTRPCRouter, publicProcedure } from "@stampxl/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
-import {Role} from "@prisma/client";
+import { Role } from "@prisma/client";
 
 export const badgeRouter = createTRPCRouter({
   create: publicProcedure
@@ -283,6 +283,25 @@ export const badgeRouter = createTRPCRouter({
         });
       }
 
+      const userBadges = await db.userBadge.findMany({
+        where: {
+          badgeId: input.id,
+        },
+      });
+
+      if (userBadges.length > 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot delete a badge that has been claimed.",
+        });
+      }
+
+      await db.claimToken.deleteMany({
+        where: {
+          badgeId: input.id,
+        },
+      });
+
       await db.badge.delete({
         where: {
           id: input.id,
@@ -324,6 +343,48 @@ export const badgeRouter = createTRPCRouter({
               },
             },
           ],
+        },
+        include: {
+          badge: true,
+        },
+      });
+    }),
+  getTradeableBadges: publicProcedure
+    .input(
+      z
+        .object({
+          userId: z.string().optional(),
+          username: z.string().optional(),
+        })
+        .refine((input) => {
+          return input.userId ?? input.username;
+        }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { db, user } = ctx;
+
+      if (!user?.sub) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to perform this operation.",
+        });
+      }
+
+      return await db.userBadge.findMany({
+        where: {
+          OR: [
+            {
+              userId: input.userId,
+            },
+            {
+              user: {
+                username: input.username,
+              },
+            },
+          ],
+          badge: {
+            tradeable: true,
+          },
         },
         include: {
           badge: true,
