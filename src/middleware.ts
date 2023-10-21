@@ -13,11 +13,14 @@ export async function middleware(req: NextRequest) {
 
   try {
     await jwtVerify(hanko ?? "", JWKS);
+    if (req.url.includes("login")) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
   } catch {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 }
 
 export const config = {
-  matcher: ["/dashboard"],
+  exclude: ["/"],
 };
