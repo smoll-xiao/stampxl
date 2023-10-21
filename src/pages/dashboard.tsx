@@ -41,6 +41,18 @@ import {
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import LogoutButton from "@tatak-badges/components/auth/LogoutButton";
 
+type User = RouterOutputs["user"]["me"];
+type Trade = RouterOutputs["trade"]["getAll"][0];
+type BadgeCreated = RouterOutputs["badge"]["getAllCreated"][0];
+type UserBadge = RouterOutputs["badge"]["getBadgesOwned"][0];
+type CreateBadgeFormValues = {
+  name: string;
+  description: string;
+  svg: string;
+  limit: number;
+  tradeable: boolean;
+};
+
 export default function Dashboard() {
   const rolesQuery = api.user.roles.useQuery();
   const roles = rolesQuery.data ?? [];
@@ -82,8 +94,6 @@ function TradeList() {
     </div>
   );
 }
-
-type Trade = RouterOutputs["trade"]["getAll"][0];
 
 function TradeCard({ trade }: { trade: Trade }) {
   const utils = api.useContext();
@@ -382,9 +392,6 @@ function CreatedBadgeList() {
   );
 }
 
-type BadgeCreated = RouterOutputs["badge"]["getAllCreated"][0];
-type UserBadge = RouterOutputs["badge"]["getBadgesOwned"][0];
-
 function CreatedBadgeListItem({ badge }: { badge: BadgeCreated }) {
   const svgXML = atob(badge.svg);
   const svgElement = svgXML.substring(svgXML.indexOf("<svg"));
@@ -488,29 +495,17 @@ function CreatedBadgeActions({ badge }: { badge: BadgeCreated }) {
   );
 }
 
-type CreateBadgeFormValues = {
-  name: string;
-  description: string;
-  svg: string;
-  limit: number;
-  tradeable: boolean;
-};
-
-const defaultCreateBadgeFormValues: CreateBadgeFormValues = {
-  name: "",
-  description: "",
-  svg: "",
-  limit: 100,
-  tradeable: false,
-};
-
 function CreateBadgeDialog() {
   const utils = api.useContext();
 
   const [open, setOpen] = useState(false);
-  const [formValues, setFormValues] = useState<CreateBadgeFormValues>(
-    defaultCreateBadgeFormValues,
-  );
+  const [formValues, setFormValues] = useState<CreateBadgeFormValues>({
+    name: "",
+    description: "",
+    svg: "",
+    limit: 100,
+    tradeable: false,
+  });
 
   const createBadgeMutation = api.badge.create.useMutation({
     onSuccess: () => {
@@ -628,8 +623,6 @@ function CreateBadgeDialog() {
     </Dialog>
   );
 }
-
-type User = RouterOutputs["user"]["me"];
 
 function EditUsernameDialog({ user }: { user: User }) {
   const utils = api.useContext();
