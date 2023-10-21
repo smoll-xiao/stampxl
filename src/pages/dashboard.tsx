@@ -708,7 +708,7 @@ function EditUsernameDialog({ user }: { user: User }) {
             <Input
               id="Username"
               className="col-span-3"
-              value={`@${username}`}
+              value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
