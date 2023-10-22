@@ -46,13 +46,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@stampxl/components/common/Tooltip";
-import {
-  type GetServerSidePropsContext,
-  type InferGetServerSidePropsType,
-} from "next";
-import { db } from "@stampxl/server/db";
-import { getToken } from "@stampxl/server/auth";
-import { decodeJwt } from "jose";
 import Progress from "@stampxl/components/common/Progress";
 
 type User = RouterOutputs["user"]["me"];
@@ -67,28 +60,9 @@ type CreateBadgeFormValues = {
   tradeable: boolean;
 };
 
-export async function getServerSideProps({ req }: GetServerSidePropsContext) {
-  const token = getToken(req);
-  if (!token) throw new Error("No token found");
-
-  const decodedToken = decodeJwt(token);
-
-  const user = await db.user.findUnique({
-    where: { id: decodedToken.sub },
-  });
-  if (!user) throw new Error("User not found");
-
-  return {
-    props: {
-      user,
-    },
-  };
-}
-
-export default function Dashboard({
-  user,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const hasCreatorRole = user.roles.includes("CREATOR");
+export default function Dashboard() {
+  const { data: user } = api.user.me.useQuery();
+  const hasCreatorRole = user?.roles.includes("CREATOR");
   return (
     <div className="flex w-full flex-col gap-10 p-4">
       <div className="flex flex-col gap-4">
@@ -103,7 +77,7 @@ export default function Dashboard({
         <TemporaryColdStartClaimAlert />
         {hasCreatorRole && <CreatedBadgeList />}
       </div>
-      <BadgeBoard initialUserData={user} />
+      <BadgeBoard />
       <TradeList />
     </div>
   );
@@ -265,8 +239,7 @@ function TradeCard({ trade }: { trade: Trade }) {
   );
 }
 
-function BadgeBoard({ initialUserData }: { initialUserData: User }) {
-  const [user, setUser] = useState(initialUserData);
+function BadgeBoard() {
   const [activeGrid, setActiveGrid] = useState<number>();
   const [triggerDownload, setTriggerDownload] = useState(false);
   const [board, setBoard] = useState<Array<UserBadge | undefined>>(
@@ -275,7 +248,7 @@ function BadgeBoard({ initialUserData }: { initialUserData: User }) {
 
   const boardRef = useRef<HTMLDivElement>(null);
 
-  const meQuery = api.user.me.useQuery();
+  const { data: user, isLoading: userLoading } = api.user.me.useQuery();
 
   const boardQuery = api.badge.getBoard.useQuery();
   const boardData = boardQuery.data;
@@ -314,11 +287,6 @@ function BadgeBoard({ initialUserData }: { initialUserData: User }) {
   };
 
   useEffect(() => {
-    if (!meQuery.data) return;
-    setUser(meQuery.data);
-  }, [meQuery.data]);
-
-  useEffect(() => {
     const newBoard: Array<UserBadge | undefined> = Array.from({
       length: 12 * 3,
     });
@@ -355,7 +323,11 @@ function BadgeBoard({ initialUserData }: { initialUserData: User }) {
     <div className="flex flex-col gap-2">
       <div className="flex justify-between">
         <h2 className="text-xl font-bold">
-          @{user?.username ?? "Unknown"}&apos;s board
+          {userLoading ? (
+            <Progress />
+          ) : (
+            `@${user?.username ?? "Unknown"}'s Board`
+          )}
         </h2>
         <div className="flex items-center gap-2">
           {user && <EditUsernameDialog user={user} />}
@@ -388,7 +360,7 @@ function BadgeBoard({ initialUserData }: { initialUserData: User }) {
             );
           })}
           <div className="absolute bottom-2 right-2 rounded-lg bg-gray-800 px-2 py-1 opacity-80">
-            @{user?.username ?? "Unknown"}
+            {userLoading ? <Progress /> : `@${user?.username ?? "Unknown"}`}
           </div>
         </div>
         {badgeLoading && (
