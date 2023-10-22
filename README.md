@@ -78,6 +78,14 @@ Here is what you need to be able to run Stampxl.
     pnpm dev
     ```
    
+### Setting up Hanko Cloud
+
+- Go to https://cloud.hanko.io/ and setup a new account.
+- Create a new project that will be linked to your local development environment.
+- Open your project and go to `Settings > General`
+  - Set `APP_URL` to `http://localhost:3000` or your preferred port.
+  - Copy `API_URL` and set it as the value of `NEXT_PUBLIC_HANKO_API_URL` in your `.env` file.
+   
 ### Update User Roles
 
 1. Create a new account by going to `/login` and completing the registration process.
