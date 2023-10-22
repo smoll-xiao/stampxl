@@ -1,4 +1,4 @@
-![Uploading image.png…]()
+![image](https://github.com/ShaneMaglangit/stampxl/assets/53674742/ff9abf30-f865-4342-9ddd-452f19a48077)
 
 <h3 align="center">👑 Stampxl</h3>
 
