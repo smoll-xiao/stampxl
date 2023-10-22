@@ -96,6 +96,8 @@ You're all set! Visit our [issues](https://github.com/ShaneMaglangit/stampxl/iss
 
 ## License
 
+Distributed under the [GNU General Public License v3.0](https://github.com/ShaneMaglangit/stampxl/blob/main/LICENSE.md). See `LICENSE.md` for more information.
+
 ## Acknowledgements
 
 Special thanks to these amazing projects which help power Stampxl:
