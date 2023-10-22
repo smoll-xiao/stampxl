@@ -8,9 +8,9 @@ import {
 import { Input } from "@stampxl/components/common/Input";
 import { Button } from "@stampxl/components/common/Button";
 import { api } from "@stampxl/utils/api";
-import { useRouter } from "next/router";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 export default function Claim() {
   const router = useRouter();

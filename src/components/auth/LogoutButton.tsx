@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { type Hanko } from "@teamhanko/hanko-elements";
 import { Button } from "@stampxl/components/common/Button";
@@ -20,8 +20,8 @@ export default function LogoutButton() {
   const handleClick = async () => {
     try {
       await hanko?.user.logout();
-      await router.push("/");
-      return;
+      router.push("/");
+      router.refresh();
     } catch (error) {
       console.error("Error during logout:", error);
     }
