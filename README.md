@@ -4,7 +4,7 @@
 <p align="center">
  Built your empire of pixel badges. Show off your collection that reflects your personality and achievements. Participate in events or trade with others to grow your inventory (inspired by <a href="https://stampxl.shanemaglangit.com">Holopin.io</a>)
  <br />
- <a href="https://stampxl.shanemaglangit.com"><strong>Learn more »</strong></a>
+ <a href="https://stampxl.shanemaglangit.com"><strong>Visit the site »</strong></a>
  <br />
  <br />
  <a href="https://stampxl.shanemaglangit.com">Website</a>
