@@ -79,4 +79,10 @@
     height: 100%;
     width: 100%;
   }
+
+  hanko-auth {
+    --color: #f8fafc;
+    --color-shade-2: rgb(15 23 42);
+    --background-color: #020917;
+  }
 }
