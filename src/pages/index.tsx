@@ -41,17 +41,19 @@ function Navbar() {
           👑 Stampxl
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <a href="https://github.com/ShaneMaglangit/stampxl/blob/main/README.md">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Documentation
-            </NavigationMenuLink>
+          <a
+            href="https://github.com/ShaneMaglangit/stampxl/blob/main/README.md"
+            className={navigationMenuTriggerStyle()}
+          >
+            Documentation
           </a>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <a href="https://github.com/ShaneMaglangit/stampxl">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              GitHub
-            </NavigationMenuLink>
+          <a
+            href="https://github.com/ShaneMaglangit/stampxl"
+            className={navigationMenuTriggerStyle()}
+          >
+            GitHub
           </a>
         </NavigationMenuItem>
         <NavigationMenuItem className="justify-self-end">
