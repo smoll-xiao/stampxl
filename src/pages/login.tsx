@@ -8,7 +8,9 @@ export default function LoginPage() {
   );
   return (
     <Suspense fallback={"Loading ..."}>
-      <HankoAuth />
+      <div className="flex items-center">
+        <HankoAuth />
+      </div>
     </Suspense>
   );
 }
