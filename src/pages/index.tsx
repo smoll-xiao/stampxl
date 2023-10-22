@@ -17,7 +17,7 @@ export default function Home() {
         Collect and trade pixel badges.
       </h1>
       <p className="text-center text-xl text-muted-foreground">
-        Built your empire of pixel badges. Show off your collection that
+        Build your empire of pixel badges. Show off your collection that
         reflects your personality and achievements. Participate in events or
         trade with others to grow your inventory.
       </p>
