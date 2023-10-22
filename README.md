@@ -106,4 +106,5 @@ Special thanks to these amazing projects which help power Stampxl:
 - [Vercel](https://vercel.com/)
 - [Next.js](https://nextjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
+- [TRPC](https://trpc.io/)
 - [Prisma](https://prisma.io/)
